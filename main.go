@@ -19,9 +19,11 @@ var (
 	dbname   = os.Getenv("MYSQL_DATABASE")
 )
 
+type PasswordHash []byte
+
 // Model describes the model that should be inserted
 type Model struct {
-	Password []byte
+	Password PasswordHash
 }
 
 func main() {
@@ -39,7 +41,7 @@ func main() {
 
 	// Insert raw bytes
 	mdl := &Model{
-		Password: []byte("random-bytes"),
+		Password: PasswordHash("random-bytes"),
 	}
 	if err := db.Create(mdl).Error; err != nil {
 		panic(err)
@@ -51,7 +53,7 @@ func main() {
 		panic(err)
 	}
 	mdl = &Model{
-		Password: hash,
+		Password: PasswordHash(hash),
 	}
 	if err := db.Create(mdl).Error; err != nil {
 		panic(err)
