@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+
+  server:
+    build: .
+    environment:
+      MYSQL_HOST: database
+      MYSQL_USER: user
+      MYSQL_PORT: 3306
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: db
+
+  database:
+    image: mysql:5.7
+    environment:
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+      MYSQL_DATABASE: db
+      MYSQL_ROOT_PASSWORD: p4ssw0rd
+    command: --max_allowed_packet=32505856 --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+
+  # just to inspect database
+  adminer:
+    image: adminer
+    ports:
+      - 12345:8080
