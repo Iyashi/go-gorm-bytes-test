@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"golang.org/x/crypto/bcrypt"
-
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -19,11 +17,16 @@ var (
 	dbname   = os.Getenv("MYSQL_DATABASE")
 )
 
-type PasswordHash []byte
+// this will work
+type ModelRaw struct {
+  Bytes   []byte
+}
 
-// Model describes the model that should be inserted
-type Model struct {
-	Password PasswordHash
+type Hash []byte
+
+// this will NOT work
+type ModelTyped struct {
+  Bytes Hash
 }
 
 func main() {
@@ -35,27 +38,19 @@ func main() {
 	}
 
 	// Migrate database
-	if err := db.AutoMigrate(&Model{}); err != nil {
+	if err := db.AutoMigrate(&ModelRaw{}, &ModelTyped{}); err != nil {
 		panic(err)
 	}
 
-	// Insert raw bytes
-	mdl := &Model{
-		Password: PasswordHash("random-bytes"),
-	}
-	if err := db.Create(mdl).Error; err != nil {
-		panic(err)
-	}
+  // this works
+  mdl1 := &ModelRaw{Bytes: []byte("random-bytes")}
+  if err := db.Debug().Create(mdl1).Error; err != nil {
+    panic(err)
+  }
 
-	// Insert bcrypt hash
-	hash, err := bcrypt.GenerateFromPassword([]byte("random-bytes"), bcrypt.DefaultCost)
-	if err != nil {
-		panic(err)
-	}
-	mdl = &Model{
-		Password: PasswordHash(hash),
-	}
-	if err := db.Create(mdl).Error; err != nil {
-		panic(err)
-	}
+  // error here
+  mdl2 := &ModelTyped{Bytes: Hash("random-bytes")}
+  if err := db.Debug().Create(mdl2).Error; err != nil {
+    panic(err)
+  }
 }
